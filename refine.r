@@ -39,7 +39,15 @@ refine_data <- refine_data %>%
          company_van_houten = case_when(company =="van houten" ~ 1,
                                         TRUE ~ 0),
          company_unilever = case_when(company == "unilever" ~ 1,
-                                      TRUE ~ 0))
+                                      TRUE ~ 0),
+         product_smartphone = case_when(product_category == "Smartphone" ~ 1,
+                                        TRUE ~ 0),
+         product_tv = case_when (product_category == "TV" ~ 1,
+                                 TRUE ~ 0),
+         product_laptop = case_when (product_category == "Laptop" ~ 1,
+                                     TRUE ~ 0),
+         product_tablet = case_when (product_category == "Tablet" ~ 1,
+                                     TRUE ~ 0))
 
 # Export processed data as CSV
 write.csv(refine_data, file = "refine_clean.csv", row.names = FALSE, quote = FALSE)

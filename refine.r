@@ -15,9 +15,20 @@ refine_data <- refine_data %>%
                              company == "v" ~ "van houten",
                              company == "u" ~ "unilever"))
 
-#Separate out product_code, product_number into separate columns
+# Separate out product_code, product_number into separate columns
 refine_data <- refine_data %>% 
   separate(Product.code...number, into = c("product_code", "product_number"))
+
+# Add product categories
+refine_data <- refine_data %>% 
+  mutate(product_category = case_when(product_code == "p" ~ "Smartphone",
+                                      product_code == "v" ~ "TV",
+                                      product_code == "x" ~ "Laptop",
+                                      product_code == "q" ~ "Tablet"))
+
+# Combine address blocks into an address
+refine_data <- refine_data %>% 
+  unite("full_address", c("address", "city", "country"), sep = ", ", remove = FALSE)
 
 # Export processed data as CSV
 write.csv(refine_data, file = "refine_clean.csv", row.names = FALSE, quote = FALSE)

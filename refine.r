@@ -15,5 +15,9 @@ refine_data <- refine_data %>%
                              company == "v" ~ "van houten",
                              company == "u" ~ "unilever"))
 
+#Separate out product_code, product_number into separate columns
+refine_data <- refine_data %>% 
+  separate(Product.code...number, into = c("product_code", "product_number"))
+
 # Export processed data as CSV
 write.csv(refine_data, file = "refine_clean.csv", row.names = FALSE, quote = FALSE)

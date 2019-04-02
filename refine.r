@@ -1,4 +1,5 @@
 library(dplyr)
+library(tidyr)
 
 # Import CSV file
 refine_data <- tbl_df(read.csv("refine_original.csv"))

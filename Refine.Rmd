@@ -1,0 +1,106 @@
+---
+title: "Refine"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Introduction
+
+In this project, I cleaned up a table listing a bunch of products along with product codes, company names, and addresses.  The code below loads the libraries needed to wrangle the data (dplyr and tidyr), then imports the data into a so-called "tibble"; the data are shown below the code.
+
+```{r message = FALSE}
+library(dplyr)
+library(tidyr)
+refine_data <- tbl_df(read.csv("refine_original.csv"))
+```
+```{r echo = FALSE, message = FALSE}
+library(kableExtra)
+kable(refine_data, format="markdown")
+```
+## Correcting the company names
+
+It's obvious that the company names are commonly misspelled.  Luckily, with the exception fo "fillips", all of the first letters of the company names are correct.  The code below corrects the spelling of the company names based on the first letter of each (misspelled) company name.
+
+```{r}
+refine_data <- refine_data %>% 
+  mutate(company = tolower(company)) %>%
+  mutate(company = substr(company, 1, 1)) %>%
+  mutate(company = case_when(company == "a" ~ "akzo",
+                             company == "p" | company == "f" ~ "phillips",
+                             company == "v" ~ "van houten",
+                             company == "u" ~ "unilever"))
+```
+```{r echo = FALSE, message = FALSE}
+kable(refine_data[1:10,], format = "markdown")
+```
+
+##Separating the product number and code
+
+It's clear that the product number and code are listed together in one column; it would be cleaner to have them in two separate columns; the code below accomplishes that.
+```{r}
+refine_data <- refine_data %>% 
+  separate(Product.code...number, into = c("product_code", "product_number"))
+```
+```{r echo = FALSE, message = FALSE}
+kable(refine_data[1:10,], format="markdown")
+```
+
+##Ading product categories
+
+The product code corresponds to the category of the product.  'p' stands for "Smartphone", 'v' stands for "TV", 'x' stands for laptop, and 'q' stands for tablet.  The code below adds a column for product category.
+```{r}
+refine_data <- refine_data %>% 
+  mutate(product_category = case_when(product_code == "p" ~ "Smartphone",
+                                      product_code == "v" ~ "TV",
+                                      product_code == "x" ~ "Laptop",
+                                      product_code == "q" ~ "Tablet"))
+```
+```{r echo = FALSE, message = FALSE}
+kable(refine_data[1:10,], format="markdown")
+```
+
+##Adding the full address for geocoding
+
+For geocoding, sometimes it's useful to have the full address listed on one line.  The code below creates a new collumn with the full address (address, city country)
+```{r}
+refine_data <- refine_data %>% 
+  unite("full_address", c("address", "city", "country"), sep = ", ", remove = FALSE)
+```
+```{r echo = FALSE, message = FALSE}
+kable(refine_data[1:10,], format="markdown")
+```
+
+##Creating dummy variables for company and product category
+Both the company name and product category are categorical variables, **i.e.** they each have a fixed set of values (four in each case.)  The code below adds "dummy variables" which show whether each product is from each company, and whether each product is part of each product category.
+```{r}
+refine_data <- refine_data %>% 
+  mutate(company_phillips = case_when(company == "phillips" ~ 1,
+                                      TRUE ~ 0),
+         company_akzo = case_when(company == "akzo" ~1,
+                                  TRUE ~ 0 ),
+         company_van_houten = case_when(company =="van houten" ~ 1,
+                                        TRUE ~ 0),
+         company_unilever = case_when(company == "unilever" ~ 1,
+                                      TRUE ~ 0),
+         product_smartphone = case_when(product_category == "Smartphone" ~ 1,
+                                        TRUE ~ 0),
+         product_tv = case_when (product_category == "TV" ~ 1,
+                                 TRUE ~ 0),
+         product_laptop = case_when (product_category == "Laptop" ~ 1,
+                                     TRUE ~ 0),
+         product_tablet = case_when (product_category == "Tablet" ~ 1,
+                                     TRUE ~ 0))
+```
+At this point, the data is fully "wrangled" for the purposes of this project; the data can be written to a new CSV file as shown below:
+
+```{r}
+write.csv(refine_data, file = "refine_clean.csv", row.names = FALSE, quote = FALSE)
+```
+
+And for the sake of completeness, the fully "wrangled" data is shown below:
+```{r echo = FALSE, message = FALSE}
+kable(refine_data, format = "markdown")
+```
